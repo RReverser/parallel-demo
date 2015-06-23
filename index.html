@@ -3,7 +3,14 @@
 <script src="asyncContextServer.js"></script>
 <script src="workerServer.js"></script>
 
-<div id="time"></div>
-<div id="number"></div>
+<div id="clock"></div>
+<hr />
+<form id="form">
+  <table>
+    <tr><td>X: </td><td><input type="number" id="x" name="x" value="0" /></td></tr>
+    <tr><td>Y: </td><td><input type="number" id="y" name="y" value="0" /></td></tr>
+    <tr><td>X*Y = </td><td><output id="output" for="x y">0</output></td></tr>
+  </table>
+</form>
 
 <script src="index.js"></script>

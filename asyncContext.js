@@ -25,11 +25,15 @@ function invokeWith(chain, type, args) {
 	return invoke(chainWith(chain, type, args));
 }
 
+function thenHandler(resolve, reject) {
+	return invoke(this).then(resolve, reject);
+}
+
 var AsyncContextHandler = {
 	get: function (target, name, receiver) {
 		switch (name) {
 			case 'then':
-				return invoke(target);
+				return thenHandler;
 
 			case '__asyncOps':
 				return target.__asyncOps;
@@ -83,5 +87,4 @@ var AsyncContextHandler = {
 };
 
 self.asyncContext = createChain([]);
-self.asyncWindow = asyncContext.window;
-self.asyncDocument = asyncWindow.document;
+self.asyncDocument = asyncContext.document;

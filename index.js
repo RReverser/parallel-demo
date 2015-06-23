@@ -1,16 +1,23 @@
 'use strict';
 
-(function handler() {
-	document.getElementById('time').textContent = new Date().toString();
-	requestAnimationFrame(handler);
+(function clock() {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+  requestAnimationFrame(clock);
 })();
 
-parallel(function () {
-	var i = 0;
-	while (true) {
-		asyncDocument.getElementById('number').textContent = Math.random();
-		var end = Date.now() + 5000;
-		while (Date.now() < end);
-		asyncDocument.title = (i += 5) + ' seconds gone';
-	}
-});
+function onInput() {
+  parallel(function *() {
+    // get inputs
+    var x = yield asyncDocument.getElementById('x').value;
+    var y = yield asyncDocument.getElementById('y').value;
+
+    // VERY useful calculations
+    for (var finish = Date.now() + 3000; Date.now() < finish;);
+    var result = x * y;
+
+    // output result
+    asyncDocument.getElementById('output').value = result;
+  });
+}
+
+document.getElementById('form').addEventListener('input', onInput);
