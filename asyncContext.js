@@ -1,24 +1,21 @@
-var createChain = function (ops) {
-	var chain = function () {};
+function createChain(ops) {
+	let chain = function () {};
 	chain.__asyncOps = ops;
 	return new Proxy(chain, AsyncContextHandler);
-};
-
-function AsyncAccessError() {
-	TypeError.call(this, 'Can\'t perform synchronous operation on remote object.');
 }
 
-AsyncAccessError.prototype = Object.create(TypeError.prototype);
+class AsyncAccessError extends TypeError {
+    constructor() {
+	   super('Can\'t perform synchronous operation on remote object.');
+    }
+}
 
 function invoke(chain) {
 	return sendToWorker(self, 'asyncContext', chain.__asyncOps);
 }
 
 function chainWith(chain, type, args) {
-	return createChain(chain.__asyncOps.concat([{
-		type: type,
-		args: args
-	}]));
+	return createChain(chain.__asyncOps.concat([{ type, args }]));
 }
 
 function invokeWith(chain, type, args) {
@@ -29,8 +26,8 @@ function thenHandler(resolve, reject) {
 	return invoke(this).then(resolve, reject);
 }
 
-var AsyncContextHandler = {
-	get: function (target, name, receiver) {
+const AsyncContextHandler = {
+	get(target, name, receiver) {
 		switch (name) {
 			case 'then':
 				return thenHandler;
@@ -42,49 +39,48 @@ var AsyncContextHandler = {
 				return chainWith(target, 'get', [name]);
 		}
 	},
-	set: function (target, name, value, receiver) {
+	set(target, name, value, receiver) {
 		invokeWith(target, 'set', [name, value]);
 		return true;
 	},
-	has: function (target, name) {
+	has(target, name) {
 		throw new AsyncAccessError();
 	},
-	apply: function (target, receiver, args) {
+	apply(target, receiver, args) {
 		return chainWith(target, 'apply', [null, args]);
 	},
-	construct: function (target, args) {
+	construct(target, args) {
 		return chainWith(target, 'construct', [args]);
 	},
-	getOwnPropertyDescriptor: function (target, name) {
+	getOwnPropertyDescriptor(target, name) {
 		throw new AsyncAccessError();
 	},
-	defineProperty: function (target, name, desc) {
+	defineProperty(target, name, desc) {
 		invokeWith(target, 'defineProperty', [name, desc]);
 		return true;
 	},
-	getPrototypeOf: function (target) {
+	getPrototypeOf(target) {
 		throw new AsyncAccessError();
 	},
-	setPrototypeOf: function (target, newProto) {
+	setPrototypeOf(target, newProto) {
 		throw new AsyncAccessError();
 	},
-	deleteProperty: function (target, name) {
+	deleteProperty(target, name) {
 		invokeWith(target, 'deleteProperty', [name]);
 	},
-	enumerate: function (target) {
+	enumerate(target) {
 		throw new AsyncAccessError();
 	},
-	preventExtensions: function (target) {
+	preventExtensions(target) {
 		invokeWith(target, 'preventExtensions', []);
 		return true;
 	},
-	isExtensible: function (target) {
+	isExtensible(target) {
 		throw new AsyncAccessError();
 	},
-	ownKeys: function (target) {
+	ownKeys(target) {
 		throw new AsyncAccessError();
 	}
 };
 
-self.asyncContext = createChain([]);
-self.asyncDocument = asyncContext.document;
+const asyncContext = createChain([]);

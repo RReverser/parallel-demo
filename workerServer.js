@@ -1,8 +1,6 @@
 var worker = new Worker('worker.js');
 
-addEventListener('close', function () {
-	worker.terminate();
-});
+addEventListener('close', () => worker.terminate());
 
 AsyncContextServer.attach(worker);
 

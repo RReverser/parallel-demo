@@ -1,30 +1,26 @@
-'use strict';
-
 importScripts('reflect.js');
 importScripts('workerHelper.js');
 importScripts('asyncContext.js');
 
 function _asyncToGenerator(fn) {
-    return function() {
-        var gen = fn.apply(this, arguments);
-        return new Promise(function(resolve, reject) {
+    return function () {
+        const gen = fn.apply(this, arguments);
+        return new Promise((resolve, reject) => {
+            const callNext = step.bind(null, 'next');
+            const callThrow = step.bind(null, 'throw');
+
             function step(key, arg) {
                 try {
                     var info = gen[key](arg);
-                    var value = info.value;
                 } catch (error) {
-                    reject(error);
-                    return;
+                    return reject(error);
                 }
                 if (info.done) {
-                    resolve(value);
+                    resolve(info.value);
                 } else {
-                    Promise.resolve(value).then(callNext, callThrow);
+                    Promise.resolve(info.value).then(callNext, callThrow);
                 }
             }
-
-            var callNext = step.bind(null, 'next');
-            var callThrow = step.bind(null, 'throw');
 
             callNext();
         });
@@ -34,5 +30,5 @@ function _asyncToGenerator(fn) {
 handleWorker(self, 'exec', function (code) {
 	var func = eval('(' + code + ')');
 	func = _asyncToGenerator(func);
-	return Promise.resolve(asyncContext).then(func);
+	return Promise.resolve().then(() => func(asyncContext));
 });
