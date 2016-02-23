@@ -8,12 +8,14 @@
 function onInput() {
   parallel(function *({ document }) {
     // get inputs
-    var x = yield document.getElementById('x').value;
-    var y = yield document.getElementById('y').value;
+    let [x, y] = yield Promise.all([
+        document.getElementById('x').value,
+        document.getElementById('y').value
+    ]);
 
     // VERY useful calculations
-    for (var finish = Date.now() + 3000; Date.now() < finish;);
-    var result = x * y;
+    for (let finish = Date.now() + 3000; Date.now() < finish;);
+    let result = x * y;
 
     // output result
     document.getElementById('output').value = result;
