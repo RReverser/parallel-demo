@@ -1,29 +1,27 @@
 function handleWorker(worker, type, handler) {
-	worker.addEventListener('message', ({ data }) => {
+	worker.addEventListener('message', async ({ data }) => {
 		if (data.type !== type) return;
-		Promise.resolve()
-			.then(() => handler(data.argument))
-			.then(
-				result => ({ result }),
-				error => {
-					if (!(error instanceof Error)) {
-						error = new Error(String(error));
-					}
-					let { name, message, stack } = error;
-					return {
-						error: {
-							type: name,
-							message,
-							stack
-						}
-					};
+		let response;
+		try {
+			response = {
+				result: await handler(data.argument)
+			};
+		} catch (error) {
+			if (!(error instanceof Error)) {
+				error = new Error(String(error));
+			}
+			let { name, message, stack } = error;
+			response = {
+				error: {
+					type: name,
+					message,
+					stack
 				}
-			)
-			.then(response => {
-				response.type = data.type;
-				response.id = data.id;
-				worker.postMessage(response);
-			});
+			};
+		}
+		response.type = data.type;
+		response.id = data.id;
+		worker.postMessage(response);
 	});
 }
 

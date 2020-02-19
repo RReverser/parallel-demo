@@ -8,9 +8,9 @@
 })();
 
 function onInput() {
-	parallel(function*({ document }) {
+	parallel(async ({ document }) => {
 		// get inputs
-		let [x, y] = yield Promise.all([
+		let [x, y] = await Promise.all([
 			document.getElementById('x').value,
 			document.getElementById('y').value
 		]);
