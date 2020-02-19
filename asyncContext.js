@@ -1,8 +1,10 @@
 'use strict';
 
+const ASYNC_OPS = new WeakMap();
+
 function createChain(ops) {
 	let chain = function() {};
-	chain.__asyncOps = ops;
+	ASYNC_OPS.set(chain, ops);
 	return new Proxy(chain, AsyncContextHandler);
 }
 
@@ -12,34 +14,30 @@ class AsyncAccessError extends TypeError {
 	}
 }
 
-function invoke(chain) {
-	return sendToWorker(self, 'asyncContext', chain.__asyncOps);
+function invokeOps(ops) {
+	return sendToWorker(self, 'asyncContext', ops);
+}
+
+function chainOps(chain, type, args) {
+	return ASYNC_OPS.get(chain).concat([{ type, args }]);
 }
 
 function chainWith(chain, type, args) {
-	return createChain(chain.__asyncOps.concat([{ type, args }]));
+	return createChain(chainOps(chain, type, args));
 }
 
 function invokeWith(chain, type, args) {
-	return invoke(chainWith(chain, type, args));
+	return invokeOps(chainOps(chain, type, args));
 }
 
-function thenHandler(resolve, reject) {
-	return invoke(this).then(resolve, reject);
-}
+const { then } = Promise.prototype;
 
 const AsyncContextHandler = {
 	get(target, name, receiver) {
-		switch (name) {
-			case 'then':
-				return thenHandler;
-
-			case '__asyncOps':
-				return target.__asyncOps;
-
-			default:
-				return chainWith(target, 'get', [name]);
+		if (name === 'then') {
+			return then.bind(invokeOps(ASYNC_OPS.get(target)));
 		}
+		return chainWith(target, 'get', [name]);
 	},
 	set(target, name, value, receiver) {
 		invokeWith(target, 'set', [name, value]);
