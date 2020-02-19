@@ -11,7 +11,7 @@ const AsyncContextServer = {
 					Reflect,
 					[target].concat(op.args)
 				);
-				if (newTarget instanceof Function) {
+				if (typeof newTarget === 'function') {
 					newTarget = newTarget.bind(target);
 				}
 				return newTarget;
