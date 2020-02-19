@@ -7,10 +7,7 @@ const AsyncContextServer = {
 				return;
 			}
 			return ops.reduce((target, op) => {
-				let newTarget = Reflect[op.type].apply(
-					Reflect,
-					[target].concat(op.args)
-				);
+				let newTarget = Reflect[op.type](target, ...op.args);
 				if (typeof newTarget === 'function') {
 					newTarget = newTarget.bind(target);
 				}
