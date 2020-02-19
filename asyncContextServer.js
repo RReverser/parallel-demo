@@ -1,3 +1,5 @@
+'use strict';
+
 const AsyncContextServer = {
 	attach: function(worker) {
 		handleWorker(worker, 'asyncContext', ops => {

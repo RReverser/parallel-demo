@@ -1,3 +1,5 @@
+'use strict';
+
 function handleWorker(worker, expectedType, handler) {
 	worker.addEventListener(
 		'message',

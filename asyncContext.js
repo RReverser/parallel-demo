@@ -1,3 +1,5 @@
+'use strict';
+
 function createChain(ops) {
 	let chain = function() {};
 	chain.__asyncOps = ops;

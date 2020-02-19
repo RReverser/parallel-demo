@@ -1,3 +1,5 @@
+'use strict';
+
 var worker = new Worker('worker.js');
 
 addEventListener('close', () => worker.terminate());

@@ -1,3 +1,5 @@
+'use strict';
+
 importScripts('workerHelper.js');
 importScripts('asyncContext.js');
 
