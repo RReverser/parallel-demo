@@ -1,13 +1,13 @@
 function createChain(ops) {
-	let chain = function () {};
+	let chain = function() {};
 	chain.__asyncOps = ops;
 	return new Proxy(chain, AsyncContextHandler);
 }
 
 class AsyncAccessError extends TypeError {
-    constructor() {
-	   super('Can\'t perform synchronous operation on remote object.');
-    }
+	constructor() {
+		super("Can't perform synchronous operation on remote object.");
+	}
 }
 
 function invoke(chain) {
