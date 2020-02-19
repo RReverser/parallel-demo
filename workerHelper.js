@@ -1,53 +1,49 @@
-function handleWorker(worker, type, handler) {
-	worker.addEventListener('message', async ({ data }) => {
-		if (data.type !== type) return;
-		let response;
-		try {
-			response = {
-				result: await handler(data.argument)
-			};
-		} catch (error) {
-			if (!(error instanceof Error)) {
-				error = new Error(String(error));
-			}
-			let { name, message, stack } = error;
-			response = {
-				error: {
-					type: name,
+function handleWorker(worker, expectedType, handler) {
+	worker.addEventListener(
+		'message',
+		async ({ data: { id, type, argument } }) => {
+			if (type !== expectedType) return;
+			let response = { id };
+			try {
+				response.result = await handler(argument);
+			} catch (error) {
+				if (!(error instanceof Error)) {
+					error = new Error(String(error));
+				}
+				let { name, message, stack } = error;
+				response.error = {
+					name,
 					message,
 					stack
-				}
-			};
+				};
+			}
+			worker.postMessage(response);
 		}
-		response.type = data.type;
-		response.id = data.id;
-		worker.postMessage(response);
-	});
+	);
 }
 
-function sendToWorker(worker, type, data) {
+function sendToWorker(worker, type, argument) {
 	return new Promise(function(resolve, reject) {
 		let id = Math.random()
 			.toString()
 			.slice(2);
 		worker.addEventListener('message', function handler({ data }) {
-			if (data.type === type && data.id === id) {
-				worker.removeEventListener('message', handler);
-				let { error } = data;
-				if (error) {
-					let { stack } = error;
-					error = new (self[error.type] || Error)(error.message);
-					error.stack = stack;
-					reject(error);
-				} else {
-					resolve(data.result);
-				}
+			if (data.id !== id) return;
+			worker.removeEventListener('message', handler);
+			let { error } = data;
+			if (error) {
+				let { name, message, stack } = error;
+				error = new (self[name] || Error)(message);
+				error.stack = stack;
+				reject(error);
+			} else {
+				resolve(data.result);
 			}
 		});
 		worker.postMessage({
-			type,
 			id,
-			argument: data
+			type,
+			argument
 		});
 	});
 }
