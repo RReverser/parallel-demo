@@ -1,4 +1,3 @@
-importScripts('reflect.js');
 importScripts('workerHelper.js');
 importScripts('asyncContext.js');
 
